@@ -99,4 +99,25 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.post('/', async (req, res) => {
+  const offerData = req.body;
+
+  try {
+    const db = await getDb();
+    const result = await db.collection('offers').insertOne(offerData);
+
+    const message = JSON.stringify({
+      offerId: result.insertedId.toString(),
+      from: offerData.from,
+      to: offerData.to
+    });
+
+    await redis.publish('offers:new', message);
+
+    res.status(201).json({ message: 'Offre ajoutée', id: result.insertedId });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur ajout offre', details: err.message });
+  }
+});
+
 module.exports = router;
