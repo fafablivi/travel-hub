@@ -21,9 +21,16 @@ router.get('/', async (req, res) => {
     const db = await getDb();
     const offers = await db.collection('offers')
       .find({ from, to })
+      .project({
+        provider: 1,
+        price: 1,
+        currency: 1,
+        legs: 1
+      })
       .sort({ price: 1 })
       .limit(parseInt(limit))
       .toArray();
+
 
     // Stockage JSON compressé dans Redis SET EX 60
     const json = JSON.stringify(offers);
